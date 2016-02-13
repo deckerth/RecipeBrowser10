@@ -1,0 +1,38 @@
+﻿<ContentDialog x:Name="CategoryEditor" x:Uid="CategoryEditor"
+    x:Class="RecipeBrowser.DefineCategoryDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:RecipeBrowser"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Title="TITLE"
+    PrimaryButtonText="SAVE"
+    SecondaryButtonText="CANCEL"
+    PrimaryButtonClick="SaveButtonClick"
+    SecondaryButtonClick="CancelButtonClick"
+    IsPrimaryButtonEnabled="False" >
+
+    <Grid BorderBrush="{StaticResource MenuBarBackgroundBrush}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <StackPanel HorizontalAlignment="Left" Height="Auto" VerticalAlignment="Top" Width="Auto" Orientation="Vertical" Margin="0,0,-447,0">
+            <TextBlock x:Uid="CategoryLabel" Text="Kategorie:"  HorizontalAlignment="Left" TextWrapping="Wrap" VerticalAlignment="Center"  Margin="0" />
+            <TextBox x:Name="CategoryName" HorizontalAlignment="Left" TextWrapping="Wrap" VerticalAlignment="Center" Width="300"/>
+        </StackPanel>
+
+        <TextBlock x:Name="ErrorMessageDisplay" Grid.Row="1" VerticalAlignment="Center"/>
+
+        <Border BorderBrush="Black" Grid.Row="2" BorderThickness="1" HorizontalAlignment="Left" Height="300" VerticalAlignment="Top" Width="300" >
+            <Image x:Name="CategoryImage"/>
+        </Border>
+
+        <Button x:Uid="GetCategoryImage" Grid.Row="3" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Margin="0,20,0,0" Click="LoadCategoryImage_Click"/>
+
+    </Grid>
+</ContentDialog>

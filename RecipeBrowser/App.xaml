@@ -1,0 +1,54 @@
+﻿<Application
+    x:Class="RecipeBrowser.App"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:RecipeBrowser"
+    RequestedTheme="Light">
+
+    <Application.Resources>
+        <ResourceDictionary>
+            <local:RecipeFolders x:Key="recipeFolders"/>
+
+            <SolidColorBrush x:Key="RecipesItemsBackgroundBrush" Color="#FFF4ECD0"/>
+            <SolidColorBrush x:Key="MenuBarBackgroundBrush" Color="#FF5F3D02"/>
+            <SolidColorBrush x:Key="MenuBarForegroundBrush" Color="#FFF4ECD0"/>
+            <SolidColorBrush x:Key="ListViewItemSelectedForegroundThemeBrush" Color="#FFF4ECD0"/>
+            <SolidColorBrush x:Key="ListViewItemSelectedBackgroundThemeBrush" Color="#FF5F3D02"/>
+            <SolidColorBrush x:Key="ListViewItemSelectedPointerOverBackgroundThemeBrush" Color="#FF5F3D02"/>
+            <SolidColorBrush x:Key="ListViewItemSelectedPointerOverBorderThemeBrush" Color="#FF5F3D02" />
+            <SolidColorBrush x:Key="ProgressBarForegroundThemeBrush" Color="#FF5F3D02" />
+            <SolidColorBrush x:Key="ProgressBarIndeterminateForegroundThemeBrush" Color="#FF5F3D02" />
+            <SolidColorBrush x:Key="TimeOverForegroundBrush" Color="Red"/>
+            <SolidColorBrush x:Key="TimeNotOverForegroundBrush" Color="#FFF4ECD0"/>
+
+            <!-- 
+             https://marcominerva.wordpress.com/2013/10/29/customizing-searchbox-appearance-in-windows-8-1-store-apps/
+            
+             Search button background when when the control is focused, but the mouse is 
+             out of the button.
+             It is also the background of search suggestions when the mouse is over 
+             them -->
+            <SolidColorBrush x:Key="SearchBoxButtonBackgroundThemeBrush" Color="#FF593C0A" />
+
+            <!-- Search button background when the mouse is over the button
+             (when the control is focused or not) -->
+            <SolidColorBrush x:Key="SearchBoxButtonPointerOverBackgroundThemeBrush"
+                         Color="#FF402B06" />
+
+            <!-- Search button color when the control is focused. 
+             It is also the search suggestions color when the mouse is over them -->
+            <SolidColorBrush x:Key="SearchBoxButtonForegroundThemeBrush" Color="#FF8B5E10" />
+
+            <!-- Search suggestions color seprator -->
+            <SolidColorBrush x:Key="SearchBoxSeparatorSuggestionForegroundThemeBrush"
+                         Color="#FF402B06" />
+
+            <!-- Color of highlighted characters in the result suggestions when the mouse is 
+             over the element -->
+            <SolidColorBrush x:Key="SearchBoxHitHighlightSelectedForegroundThemeBrush"
+                         Color="#FFF4ECD0" />
+
+        </ResourceDictionary>
+    </Application.Resources>
+
+</Application>

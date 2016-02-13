@@ -1,0 +1,222 @@
+﻿<Page
+    x:Class="RecipeBrowser.CategoryOverview"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:RecipeBrowser"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    DataContext="{Binding DefaultViewModel, RelativeSource={RelativeSource Self}}"
+    mc:Ignorable="d">
+
+    <Page.Background>
+        <StaticResource ResourceKey="RecipesItemsBackgroundBrush"/>
+    </Page.Background>
+
+    <SplitView x:Name="RootSplitView"
+          IsPaneOpen="False"
+           OpenPaneLength="296" 
+           CompactPaneLength="70" 
+           DisplayMode="CompactOverlay" PaneBackground="{StaticResource MenuBarBackgroundBrush}">
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup x:Name="VisualStateGroup">
+                <VisualState x:Name="Phones">
+                    <VisualState.Setters>
+                        <Setter Target="pageTitle.(UIElement.Visibility)" Value="Visible"/>
+                        <Setter Target="RecipeSearchBox.(UIElement.Visibility)" Value="Collapsed"/>
+                        <Setter Target="LeftRecipeSearchBox.(UIElement.Visibility)" Value="Collapsed"/>
+                        <Setter Target="SearchRequestButton.(UIElement.Visibility)" Value="Visible"/>
+                    </VisualState.Setters>
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="0"/>
+                    </VisualState.StateTriggers>
+                </VisualState>
+
+                <VisualState x:Name="Desktop">
+                    <VisualState.Setters>
+                        <Setter Target="pageTitle.(UIElement.Visibility)" Value="Visible"/>
+                        <Setter Target="RecipeSearchBox.(UIElement.Visibility)" Value="Visible"/>
+                        <Setter Target="LeftRecipeSearchBox.(UIElement.Visibility)" Value="Collapsed"/>
+                        <Setter Target="SearchRequestButton.(UIElement.Visibility)" Value="Collapsed"/>
+                    </VisualState.Setters>
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="1024"/>
+                    </VisualState.StateTriggers>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
+        
+        <SplitView.Pane>
+            <StackPanel Orientation="Vertical">
+                <AppBarButton x:Name="ToggleSplitView"
+                                    ToolTipService.ToolTip=""  
+                                    FontSize="20" 
+                                    VerticalAlignment="Top" 
+                                    HorizontalAlignment="Left" 
+                                    VerticalContentAlignment="Center"
+                                    HorizontalContentAlignment="Center"
+                                    FontFamily="Segoe MDL2 Assets" 
+                                    Content="    &#xE700;" Foreground="{StaticResource MenuBarForegroundBrush}"/>
+
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Left" >
+                    <AppBarButton x:Name="ShowFavorites"
+                                  x:Uid="FavoriteRecipes"
+                                    FontFamily="Segoe MDL2 Assets" 
+                                    FontSize="20" 
+                                    Content="    &#xE734;"
+                                  VerticalAlignment="Center" 
+                                  HorizontalAlignment="Center" 
+                                  Click="ShowFavorites_Click" Foreground="{StaticResource MenuBarForegroundBrush}" />
+                    <TextBlock x:Uid="FavoriteRecipesText"
+                    		FontSize="18"
+                    		VerticalAlignment="Center"
+                    		HorizontalAlignment="Left" Margin="5,-15,0,0"
+                            Foreground="{StaticResource MenuBarForegroundBrush}"/>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Left" >
+                    <AppBarButton x:Name="ShowTimers"
+                                  VerticalAlignment="Center" 
+                                  HorizontalAlignment="Center" 
+                                  Foreground="{StaticResource MenuBarForegroundBrush}" 
+                                  FontFamily="Segoe MDL2 Assets" 
+                                  FontSize="20" 
+                                  Content="    &#xE823;"/>
+                    <TextBlock x:Uid="ShowTimersText"
+                    		FontSize="18"
+                    		VerticalAlignment="Center"
+                    		HorizontalAlignment="Left" Margin="5,-15,0,0"
+                            Foreground="{StaticResource MenuBarForegroundBrush}"/>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Left">
+                    <AppBarToggleButton x:Name="EditMode"  
+                                        FontFamily="Segoe MDL2 Assets" 
+                                        FontSize="20" 
+                                        Content="    &#xE70F;"
+                                        VerticalAlignment="Center"
+                                        HorizontalAlignment="Center"
+                                        Unchecked="EditMode_Checked"
+                                        Foreground="{StaticResource MenuBarForegroundBrush}"/>
+                    <TextBlock x:Uid="EditCategories"
+                    		FontSize="18"
+                    		VerticalAlignment="Center"
+                    		HorizontalAlignment="Left" Margin="5,-15,0,0"
+                            Foreground="{StaticResource MenuBarForegroundBrush}"/>
+                </StackPanel>
+
+                <StackPanel x:Name="EditCategoryButton" Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Left" Visibility="Collapsed">
+                    <AppBarButton x:Name="EditCategory" 
+                                  FontFamily="Segoe MDL2 Assets" 
+                                  FontSize="20" 
+                                  Content="    &#xE8AC;"
+                                  VerticalAlignment="Center"
+                                  HorizontalAlignment="Center"
+                                  Foreground="{StaticResource MenuBarForegroundBrush}" />
+                    <TextBlock x:Uid="EditCategory"
+                    		FontSize="18"
+                    		VerticalAlignment="Center"
+                    		HorizontalAlignment="Left" Margin="5,-15,0,0"
+                            Foreground="{StaticResource MenuBarForegroundBrush}"/>
+                </StackPanel>
+
+                <StackPanel x:Name="NewCategoryButton" Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Left" Visibility="Collapsed">
+                    <AppBarButton  x:Name="NewCategory"
+                                   VerticalAlignment="Center"
+                                   HorizontalAlignment="Center"
+                                   FontFamily="Segoe MDL2 Assets" 
+                                   FontSize="20" 
+                                   Content="    &#xE8F4;"
+                                   Foreground="{StaticResource MenuBarForegroundBrush}"
+                                   Click="NewCategory_Click"/>
+                    <TextBlock x:Uid="NewCategory"
+                    		FontSize="18"
+                    		VerticalAlignment="Center"
+                    		HorizontalAlignment="Left" Margin="5,-15,0,0"
+                            Foreground="{StaticResource MenuBarForegroundBrush}"/>
+                </StackPanel>
+
+                <TextBlock HorizontalAlignment="Left" VerticalAlignment="Top"/>
+
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Left" >
+                    <AppBarButton x:Name="AppSettings"
+                                  VerticalAlignment="Center" 
+                                  HorizontalAlignment="Center" 
+                                  FontFamily="Segoe MDL2 Assets" 
+                                  FontSize="20" 
+                                  Content="    &#xE713;"
+                                  Click="ChangeRootFolder_Click" 
+                                  Foreground="{StaticResource MenuBarForegroundBrush}"/>
+                    <TextBlock x:Uid="ChangeRootFolder"
+                    		FontSize="18"
+                    		VerticalAlignment="Center"
+                    		HorizontalAlignment="Left" Margin="5,-15,0,0"
+                            Foreground="{StaticResource MenuBarForegroundBrush}"/>
+                </StackPanel>
+
+            </StackPanel>
+        </SplitView.Pane>
+
+            <Grid Background="{StaticResource RecipesItemsBackgroundBrush}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+
+                <Grid  Grid.Column="1" >
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="75"/>
+                        <RowDefinition/>
+                    </Grid.RowDefinitions>
+                    <Grid >
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="300"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock x:Name="pageTitle" x:Uid="AppName" Text="Hugo" Style="{StaticResource HeaderTextBlockStyle}" 
+                        IsHitTestVisible="false" TextWrapping="NoWrap" VerticalAlignment="Center" Width="400" Grid.Column="0" HorizontalAlignment="Left" d:LayoutOverrides="Width" Margin="40,0,0,0" Visibility="Collapsed" />
+                        <SearchBox x:Name="RecipeSearchBox" 
+                                    Background="{StaticResource RecipesItemsBackgroundBrush}" 
+                                    QuerySubmitted="SearchBox_QuerySubmitted" 
+                                    Grid.Column="1"
+                                    Height="30" 
+                                    Width="300"
+                                    VerticalAlignment="Center" 
+                                    HorizontalAlignment="Right" Margin="0,0,40,0" Visibility="Collapsed"/>
+                        <SearchBox x:Name="LeftRecipeSearchBox" 
+                                    Background="{StaticResource RecipesItemsBackgroundBrush}" 
+                                    QuerySubmitted="SearchBox_QuerySubmitted" 
+                                    Grid.Column="0" 
+                                    Width="300" 
+                                    HorizontalAlignment="Right" Margin="0,20,-40,10" d:LayoutOverrides="TopPosition, BottomPosition" Visibility="Collapsed"/>
+                        <AppBarButton x:Name="SearchRequestButton" FontFamily="Webdings" VerticalAlignment="Center" Icon="Find" BorderBrush="{StaticResource SearchBoxButtonBackgroundThemeBrush}" HorizontalAlignment="Right" Grid.Column="1" Margin="0,3" Visibility="Collapsed"  />
+                    </Grid>
+                    <!--ItemsSource="{x:Bind Categories.Folders}"-->
+                    <GridView
+                Grid.Row="1"
+                x:Name="itemGridView"
+                AutomationProperties.AutomationId="ItemsGridView"
+                AutomationProperties.Name="Items"
+                TabIndex="1"
+                SelectionMode="None"
+                IsSwipeEnabled="True" 
+                IsItemClickEnabled="True"
+                Margin="40,20,0,0">
+                        <GridView.ItemTemplate>
+                            <DataTemplate>
+                                <Grid HorizontalAlignment="Left" Width="250" Height="250">
+                                    <Grid Width="230" Height="230" HorizontalAlignment="Center" VerticalAlignment="Center">
+                                        <Border Background="{ThemeResource ListViewItemPlaceholderBackgroundThemeBrush}">
+                                            <Image Source="{Binding Image}" AutomationProperties.Name="{Binding Name}" Stretch="Uniform" />
+                                        </Border>
+                                        <StackPanel VerticalAlignment="Bottom" Background="{ThemeResource ListViewItemOverlayBackgroundThemeBrush}">
+                                            <TextBlock Text="{Binding Name}" Foreground="{ThemeResource ListViewItemOverlayForegroundThemeBrush}" Style="{StaticResource BaseTextBlockStyle}" Height="60" Margin="15,0,15,0" FontWeight="SemiBold"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </Grid>
+                            </DataTemplate>
+                        </GridView.ItemTemplate>
+                    </GridView>
+                </Grid>
+            </Grid>
+        </SplitView>
+</Page>

@@ -1,0 +1,335 @@
+﻿<Page
+    x:Class="RecipeBrowser.RecipesPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:RecipeBrowser"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Page.Transitions>
+        <TransitionCollection>
+            <NavigationThemeTransition />
+        </TransitionCollection>
+    </Page.Transitions>
+
+    <Page.Resources>
+        <ResourceDictionary>
+            <DataTemplate x:Key="RecipeItemListTemplate">
+                <Grid Margin="6" Height="50">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <StackPanel HorizontalAlignment="Left" Height="Auto" VerticalAlignment="Top" Width="Auto">
+                        <TextBlock Text="{Binding Name}" Style="{StaticResource SubtitleTextBlockStyle}" FontSize="18" />
+                        <TextBlock TextWrapping="Wrap" Text="{Binding SubTitle}" Style="{StaticResource BaseTextBlockStyle}"/>
+                    </StackPanel>
+                </Grid>
+            </DataTemplate>
+
+            <DataTemplate x:Key="DetailContentTemplate">
+                <ScrollViewer
+        		x:Name="itemDetail"
+        		AutomationProperties.AutomationId="ItemDetailScrollViewer"
+        		Padding="60,0,66,0"
+        		DataContext="{Binding SelectedItem, ElementName=itemListView}"
+        		HorizontalScrollBarVisibility="Visible"
+        		ScrollViewer.HorizontalScrollMode="Enabled" ScrollViewer.VerticalScrollMode="Enabled"
+        		ScrollViewer.ZoomMode="Enabled"  Grid.Row="1" Grid.RowSpan="2">
+                    <Image x:Name="RecipeViewer"
+                       ScrollViewer.HorizontalScrollBarVisibility="Visible" />
+                </ScrollViewer>
+            </DataTemplate>
+
+            <DataTemplate x:Key="CategoryListTemplate">
+                <Grid Margin="3" Height="30" Width="300">
+                    <Grid.Background>
+                        <SolidColorBrush Color="Black" Opacity="0.1"/>
+                    </Grid.Background>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="{Binding Name}" Style="{StaticResource SubtitleTextBlockStyle}" Margin="10,0,0,0" />
+                </Grid>
+            </DataTemplate>
+
+            <Flyout x:Name="CategoryChooserFlyout" x:Key="CategroryChooser">
+                <!--<Grid Height="600" Width="200">-->
+                <StackPanel HorizontalAlignment="Left" VerticalAlignment="Top" Height="500" Width="300">
+                    <TextBlock  x:Uid="WhichDestinationCategory"  HorizontalAlignment="Left" TextWrapping="Wrap" VerticalAlignment="Top" Style="{StaticResource BaseTextBlockStyle}"/>
+                    <ListView x:Name="OtherCategories" ItemTemplate="{StaticResource CategoryListTemplate}" Background="{StaticResource RecipesItemsBackgroundBrush}" Margin="0,20,0,0" Height="450" ItemsSource="{Binding OtherCategoryList}" />
+                </StackPanel>
+                <!--</Grid>-->
+            </Flyout>
+
+            <DataTemplate x:Key="FolderSelectionTemplate">
+                <TextBlock Text="{Binding Name}" Style="{StaticResource SubtitleTextBlockStyle}" Foreground="{StaticResource MenuBarForegroundBrush}" />
+            </DataTemplate>
+
+            <Style x:Key="TimerPanelStyle" TargetType="ListView">
+                <Setter Property="Transitions">
+                    <Setter.Value>
+                        <TransitionCollection>
+                            <PaneThemeTransition/>
+                        </TransitionCollection>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+        </ResourceDictionary>
+    </Page.Resources>
+
+    <SplitView x:Name="RootSplitView"
+          IsPaneOpen="False"
+           OpenPaneLength="296" 
+           CompactPaneLength="70" 
+           DisplayMode="CompactOverlay" PaneBackground="{StaticResource MenuBarBackgroundBrush}">
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup x:Name="AdaptiveStates" CurrentStateChanged="AdaptiveStates_CurrentStateChanged">
+                <VisualState x:Name="DefaultState">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="1024" />
+                    </VisualState.StateTriggers>
+                </VisualState>
+
+                <VisualState x:Name="NarrowState">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="0" />
+                    </VisualState.StateTriggers>
+
+                    <VisualState.Setters>
+                        <Setter Target="MasterColumn.Width" Value="*" />
+                        <Setter Target="DetailColumn.Width" Value="0" />
+                        <Setter Target="MasterListView.SelectionMode" Value="None" />
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
+
+        <SplitView.Pane>
+            <StackPanel Orientation="Vertical">
+                <AppBarButton x:Name="ToggleSplitView"
+                                    VerticalAlignment="Top" 
+                                    HorizontalAlignment="Left" 
+                                    VerticalContentAlignment="Center"
+                                    HorizontalContentAlignment="Center"
+                                    FontFamily="Segoe MDL2 Assets" 
+                                    FontSize="20" 
+                                    Content="    &#xE700;"
+                                    Foreground="{StaticResource MenuBarForegroundBrush}"/>
+
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Left">
+                    <AppBarButton x:Name="Home"
+                                    FontFamily="Segoe MDL2 Assets" 
+                                    FontSize="20" 
+                                    Content="    &#xE80F;"
+                                  VerticalAlignment="Center" 
+                                  HorizontalAlignment="Center"  
+                                  Foreground="{StaticResource MenuBarForegroundBrush}"/>
+                    <TextBlock x:Uid="Home"
+                    		FontSize="18"
+                    		VerticalAlignment="Center"
+                    		HorizontalAlignment="Left" Margin="5,-15,0,0"
+                            Foreground="{StaticResource MenuBarForegroundBrush}"/>
+                </StackPanel>
+
+                <StackPanel x:Name="ShowFavoritesButton" Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Left" >
+                    <AppBarButton x:Name="ShowFavorites"
+                                    FontFamily="Segoe MDL2 Assets" 
+                                    FontSize="20" 
+                                    Content="    &#xE734;"
+                                  VerticalAlignment="Center" 
+                                  HorizontalAlignment="Center" 
+                                  Foreground="{StaticResource MenuBarForegroundBrush}" />
+                    <TextBlock x:Uid="FavoriteRecipesText"
+                    		FontSize="18"
+                    		VerticalAlignment="Center"
+                    		HorizontalAlignment="Left" Margin="5,-15,0,0"
+                            Foreground="{StaticResource MenuBarForegroundBrush}"/>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Left" >
+                    <AppBarButton x:Name="ShowTimers"
+                                  VerticalAlignment="Center" 
+                                  HorizontalAlignment="Center" 
+                                  Foreground="{StaticResource MenuBarForegroundBrush}" 
+                                  FontFamily="Segoe MDL2 Assets" 
+                                  FontSize="20" 
+                                  Content="    &#xE823;">
+                    </AppBarButton>
+                    <TextBlock x:Uid="ShowTimersText"
+                    		FontSize="18"
+                    		VerticalAlignment="Center"
+                    		HorizontalAlignment="Left" Margin="5,-15,0,0"
+                            Foreground="{StaticResource MenuBarForegroundBrush}"/>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" VerticalAlignment="Top" HorizontalAlignment="Left" >
+                    <AppBarButton x:Name="FolderSelection"
+                                  VerticalAlignment="Center" 
+                                  HorizontalAlignment="Center" 
+                                  Foreground="{StaticResource MenuBarForegroundBrush}" 
+                                  FontFamily="Segoe MDL2 Assets" 
+                                  FontSize="20" 
+                                  Content="    &#xE8B7;" >
+                    </AppBarButton>
+                    <TextBlock x:Uid="FolderSelectionText"
+                    		FontSize="18"
+                    		VerticalAlignment="Center"
+                    		HorizontalAlignment="Left" Margin="5,-15,0,0"
+                            Foreground="{StaticResource MenuBarForegroundBrush}"/>
+                </StackPanel>
+            </StackPanel>
+        </SplitView.Pane>
+
+        <SplitView x:Name="FolderSelectionSplitView"
+           IsPaneOpen="False"
+           OpenPaneLength="296" 
+           DisplayMode="Overlay" PaneBackground="{StaticResource MenuBarBackgroundBrush}">
+                <SplitView.Pane>
+                   <ListView x:Name="FolderSelectionList" Width="300" ItemTemplate="{StaticResource FolderSelectionTemplate}" Background="{StaticResource MenuBarBackgroundBrush}" IsItemClickEnabled="True" SelectionMode="None" ItemClick="FolderSelectionChoosen" Foreground="{StaticResource MenuBarForegroundBrush}" HorizontalAlignment="Left" VerticalAlignment="Top" />
+                </SplitView.Pane>
+
+                    <Grid x:Name="LayoutRoot" Loaded="LayoutRoot_Loaded" Background="{StaticResource RecipesItemsBackgroundBrush}">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="*" />
+                        </Grid.RowDefinitions>
+
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition x:Name="MasterColumn" Width="500" />
+                            <ColumnDefinition x:Name="DetailColumn" Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <TextBlock Grid.Row="0" Grid.Column="0"
+                            x:Name="pageTitle"
+                            Margin="12,8,8,8"
+                            Style="{ThemeResource TitleTextBlockStyle}" />
+
+                        <Grid Grid.Row="1" Grid.Column="0">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="*"/>
+                            </Grid.RowDefinitions>
+
+                            <StackPanel x:Name="searchFieldPanel" 
+                                    Grid.Row="0" 
+                                    HorizontalAlignment="Left" 
+                                    VerticalAlignment="Top" 
+                                    Orientation="Horizontal">
+                                <AppBarButton x:Name="changeSortOrder" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Icon="Sort">
+                                    <Button.Flyout>
+                                        <MenuFlyout>
+                                            <MenuFlyoutItem x:Uid="NameAscending" Text="" Click="SortNameAscending_Click"/>
+                                            <MenuFlyoutItem x:Uid="DateDescending" Text="" Click="SortDateDecending_Click"/>
+                                            <MenuFlyoutItem x:Uid="LastCookedDescending" Text="" Click="SortLastCookedDescending_Click"/>
+                                        </MenuFlyout>
+                                    </Button.Flyout>
+                                </AppBarButton>
+                                <SearchBox x:Name="RecipeSearchBox" Background="{StaticResource RecipesItemsBackgroundBrush}" Width="374" Height="34" QuerySubmitted="SearchBox_QuerySubmitted"/>
+                            </StackPanel>
+
+                            <ProgressBar x:Name="LoadProgress"
+                                     Grid.Row="1" 
+                                     HorizontalAlignment="Center" 
+                                     Height="10" 
+                                     VerticalAlignment="Center" 
+                                     Width="300" 
+                                     IsIndeterminate="True" 
+                                     Foreground="{StaticResource ProgressBarForegroundThemeBrush}"/>
+
+                            <ListView
+                            x:Name="MasterListView"
+                            Grid.Row="2"
+                            ItemContainerTransitions="{x:Null}"
+                            IsItemClickEnabled="True"
+                            ItemClick="ItemListView_SelectionChanged"
+                            ItemTemplate="{StaticResource RecipeItemListTemplate}" 
+                            Padding="40,0,0,0">
+                                <ListView.ItemContainerStyle>
+                                    <Style TargetType="ListViewItem">
+                                        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                                    </Style>
+                                </ListView.ItemContainerStyle>
+                            </ListView>
+                        </Grid>
+
+                        <Border Grid.Column="1">
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Top">
+                                <ProgressRing x:Name="actionProgress" HorizontalAlignment="Center" VerticalAlignment="Center" Width="40" Height="40" Margin="0,0,0,15"/>
+                                <AppBarButton x:Name="logAsCooked" x:Uid="LogAsCooked" HorizontalAlignment="Stretch" Label="" VerticalAlignment="Stretch" Icon="Like">
+                                    <AppBarButton.Flyout>
+                                        <DatePickerFlyout x:Name="CookedOn" Placement="Bottom">
+
+                                        </DatePickerFlyout>
+                                    </AppBarButton.Flyout>
+                                </AppBarButton>
+                                <AppBarButton x:Name="editNote" HorizontalAlignment="Stretch" Label="" VerticalAlignment="Stretch" Icon="Comment">
+                                    <AppBarButton.Flyout>
+                                        <Flyout Closed="NoteEditorFlyoutClosed">
+                                            <RichEditBox x:Uid="NoteEditor" x:Name="noteEditor" Height="450" Width="400" />
+                                        </Flyout>
+                                    </AppBarButton.Flyout>
+                                </AppBarButton>
+                                <AppBarButton x:Uid="FullscreenView" ToolTipService.ToolTip="" x:Name="FullscreenView" HorizontalAlignment="Stretch" VerticalAlignment="Stretch" Icon="FullScreen" />
+                                <AppBarButton x:Uid="AddToFavorites" ToolTipService.ToolTip="" x:Name="AddToFavorites" Label="" Icon="Pin"/>
+                                <AppBarButton x:Uid="RemoveRecipe" ToolTipService.ToolTip="" x:Name="RemoveFromFavorites" HorizontalAlignment="Stretch" Label="" VerticalAlignment="Stretch" Visibility="Collapsed" Icon="UnPin"/>
+                                <AppBarSeparator/>
+                                <AppBarButton x:Uid="ChangeCategory" x:Name="changeCategory" Label="" Icon="MoveToFolder" Flyout="{StaticResource CategroryChooser}"/>
+                                <AppBarButton x:Name="Menu" ToolTipService.ToolTip="" Icon="More" VerticalAlignment="Center" HorizontalAlignment="Center" >
+                                    <Button.Flyout>
+                                        <MenuFlyout>
+                                            <MenuFlyoutItem x:Uid="OpenRecipe" Text="" x:Name="OpenFile" />
+                                            <MenuFlyoutItem x:Uid="Share" Text="" x:Name="Share" />
+                                            <MenuFlyoutItem x:Uid="DeleteRecipe" Text="" x:Name="deleteRecipe" />
+                                            <MenuFlyoutItem x:Uid="RefreshRecipes" Text="" x:Name="refreshRecipes" />
+                                        </MenuFlyout>
+                                    </Button.Flyout>
+                                </AppBarButton>
+                            </StackPanel>
+                        </Border>
+                        <ContentPresenter Grid.Row="1" Grid.Column="1"
+                        x:Name="DetailContentPresenter"
+                        VerticalAlignment="Top"
+                        BorderThickness="1,0,0,0"
+                        Padding="24,0"
+                        BorderBrush="{ThemeResource SystemControlForegroundBaseLowBrush}">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="*"/>
+                                    <RowDefinition Height="80"/>
+                                </Grid.RowDefinitions>
+
+                                <ScrollViewer
+                                Grid.RowSpan="2"
+        		                x:Name="itemDetail"
+        		                AutomationProperties.AutomationId="ItemDetailScrollViewer"
+                                VerticalAlignment="Top"
+        		                DataContext="{Binding SelectedItem, ElementName=itemListView}"
+        		                HorizontalScrollBarVisibility="Visible"
+        		                ScrollViewer.HorizontalScrollMode="Enabled" ScrollViewer.VerticalScrollMode="Enabled"
+        		                ScrollViewer.ZoomMode="Enabled"  >
+                                    <Image x:Name="RecipeViewer"
+                                       ScrollViewer.HorizontalScrollBarVisibility="Visible" />
+                                </ScrollViewer>
+
+                                <StackPanel x:Name="pageControl"
+                                            HorizontalAlignment="Center"
+                                            VerticalAlignment="Center"
+                                            Grid.Row="1"
+                                            Orientation="Horizontal"
+                                            Background="{StaticResource ListViewItemSelectedBackgroundThemeBrush}" Opacity="0.5" Visibility="Collapsed">
+                                    <AppBarButton x:Name="prevPage" HorizontalAlignment="Center" Label="" VerticalAlignment="Center" Icon="Back" Margin="0,10,0,0"/>
+                                    <TextBox x:Name="pageNumber" TextWrapping="Wrap" Text="1/2" IsReadOnly="True" PlaceholderText="2/2" FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    <AppBarButton x:Name="nextPage" HorizontalAlignment="Center" Label="" VerticalAlignment="Center" Icon="Forward" Margin="0,10,0,0"/>
+                                </StackPanel>
+                            </Grid>
+                            <ContentPresenter.ContentTransitions>
+                                <!-- Empty by default. See MasterListView_ItemClick -->
+                                <TransitionCollection />
+                            </ContentPresenter.ContentTransitions>
+                        </ContentPresenter>
+                    </Grid>
+            </SplitView>
+        </SplitView>
+</Page>
