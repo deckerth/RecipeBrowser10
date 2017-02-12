@@ -21,7 +21,7 @@
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <StackPanel HorizontalAlignment="Left" Height="Auto" VerticalAlignment="Top" Width="Auto" Orientation="Vertical" Margin="0,0,-447,0">
+        <StackPanel HorizontalAlignment="Left" Height="Auto" VerticalAlignment="Top" Width="Auto" Orientation="Vertical" Margin="0,10,0,0" >
             <TextBlock x:Uid="CategoryLabel" Text="Kategorie:"  HorizontalAlignment="Left" TextWrapping="Wrap" VerticalAlignment="Center"  Margin="0" />
             <TextBox x:Name="CategoryName" HorizontalAlignment="Left" TextWrapping="Wrap" VerticalAlignment="Center" Width="300"/>
         </StackPanel>

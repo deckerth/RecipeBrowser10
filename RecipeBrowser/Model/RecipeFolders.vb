@@ -4,6 +4,8 @@ Imports Windows.Storage.Provider
 
 Public Class RecipeFolders
 
+    Public Shared Current As RecipeFolders
+
     Private _Folders As New ObservableCollection(Of RecipeFolder)()
     Public ReadOnly Property Folders As ObservableCollection(Of RecipeFolder)
         Get
@@ -13,6 +15,7 @@ Public Class RecipeFolders
 
     Public Property FavoriteFolder As Favorites
     Public Property SearchResultsFolder As SearchResults
+    Public Property HistoryFolder As History
 
     Private initialized As Boolean
 
@@ -26,6 +29,11 @@ Public Class RecipeFolders
         Dim categories = DirectCast(App.Current.Resources("recipeFolders"), RecipeFolders)
         Return categories
     End Function
+
+    Public Sub New()
+        Current = Me
+    End Sub
+
 
     Public Async Function GetFolderAsync(name As String) As Task(Of RecipeFolder)
 
@@ -46,6 +54,8 @@ Public Class RecipeFolders
             Return FavoriteFolder
         ElseIf name = SearchResults.FolderName Then
             Return SearchResultsFolder
+        ElseIf name = History.FolderName Then
+            Return HistoryFolder
         Else
             Dim matches = _Folders.Where(Function(otherFolder) otherFolder.Name.Equals(name))
             If matches.Count() = 1 Then
@@ -76,6 +86,9 @@ Public Class RecipeFolders
 
     End Function
 
+    Public Function GetRootFolder() As StorageFolder
+        Return rootFolder
+    End Function
 
     Public Async Function GetStorageFolderAsync(name As String) As Task(Of Windows.Storage.StorageFolder)
 
@@ -174,6 +187,8 @@ Public Class RecipeFolders
 
         FavoriteFolder = New Favorites
         SearchResultsFolder = New SearchResults
+        HistoryFolder = New History
+        Await HistoryFolder.InitAsync()
 
         initialized = True
     End Function
@@ -181,7 +196,7 @@ Public Class RecipeFolders
 
     Public Async Function UpdateStatisticsAsync(changedRecipe As Recipe) As Task
 
-        Dim folder = GetFolder(changedRecipe.Categegory)
+        Dim folder = GetFolder(changedRecipe.Category)
 
         Await RecipeMetadata.Instance.WriteMetadataAsync(folder.Folder, changedRecipe)
 
@@ -195,7 +210,7 @@ Public Class RecipeFolders
 
     Public Sub UpdateNote(changedRecipe As Recipe)
 
-        Dim folder = GetFolder(changedRecipe.Categegory)
+        Dim folder = GetFolder(changedRecipe.Category)
 
         folder.UpdateNote(changedRecipe)
 
@@ -226,14 +241,20 @@ Public Class RecipeFolders
             Return
         End If
 
+        If HistoryFolder IsNot Nothing Then
+            Await HistoryFolder.CreateBackupAndCloseAsync()
+        End If
+
         Await LoadAsync()
 
         If initialized Then
             SearchResultsFolder.Clear()
+            Await HistoryFolder.TryRestoreBackupAsync()
         End If
 
     End Function
 
+#Region "Delete Recipe"
     Async Function DeleteRecipeAsync(recipe As Recipe) As Task
 
         Dim failed As Boolean
@@ -250,7 +271,7 @@ Public Class RecipeFolders
             Return
         End If
 
-        Dim folder = GetFolder(recipe.Categegory)
+        Dim folder = GetFolder(recipe.Category)
 
         Try
             If recipe.Notes IsNot Nothing Then
@@ -273,44 +294,52 @@ Public Class RecipeFolders
         SearchResultsFolder.DeleteRecipe(recipe)
 
     End Function
+#End Region
 
+#Region "Categories"
 
     Public Async Function ChangeCategoryAsync(ByVal recipeToChange As Recipe, ByVal destinationCategory As RecipeFolder) As Task
 
-        If recipeToChange.Categegory = destinationCategory.Name Then
+        If recipeToChange.Category = destinationCategory.Name Then
             Return
         End If
 
-        Dim errorFlag As Boolean
-        Dim srcFolder As RecipeFolder
+        Dim oldCategory As String = recipeToChange.Category
 
-        Try
-            Await recipeToChange.File.MoveAsync(destinationCategory.Folder, recipeToChange.File.Name, Windows.Storage.NameCollisionOption.GenerateUniqueName)
+        If recipeToChange.ItemType = Recipe.ItemTypes.Recipe Then
 
-            If destinationCategory.ContentLoaded Then
-                destinationCategory.Invalidate()
+            Dim errorFlag As Boolean
+            Dim srcFolder As RecipeFolder
+
+            Try
+                Await recipeToChange.File.MoveAsync(destinationCategory.Folder, recipeToChange.File.Name, Windows.Storage.NameCollisionOption.GenerateUniqueName)
+
+                If destinationCategory.ContentLoaded Then
+                    destinationCategory.Invalidate()
+                End If
+                srcFolder = GetFolder(recipeToChange.Category)
+                If srcFolder.ContentLoaded Then
+                    srcFolder.DeleteRecipe(recipeToChange)
+                End If
+
+            Catch ex As Exception
+                errorFlag = True
+            End Try
+
+            If errorFlag Or srcFolder Is Nothing Then
+                Dim messageDialog = New Windows.UI.Popups.MessageDialog(App.Texts.GetString("UnableToEditCategory"))
+                Await messageDialog.ShowAsync()
+                Return
             End If
-            srcFolder = GetFolder(recipeToChange.Categegory)
-            If srcFolder.ContentLoaded Then
-                srcFolder.DeleteRecipe(recipeToChange)
-            End If
 
-        Catch ex As Exception
-            errorFlag = True
-        End Try
-
-        If errorFlag Or srcFolder Is Nothing Then
-            Dim messageDialog = New Windows.UI.Popups.MessageDialog(App.Texts.GetString("UnableToEditCategory"))
-            Await messageDialog.ShowAsync()
-        Else
             ' Move notes
             Try
                 If recipeToChange.Notes IsNot Nothing Then
                     Await recipeToChange.Notes.MoveAsync(destinationCategory.Folder, recipeToChange.Notes.Name, Windows.Storage.NameCollisionOption.GenerateUniqueName)
                 End If
             Catch ex As Exception
-                errorFlag = True
             End Try
+
 
             'Move metadata if they exist
             Try
@@ -324,12 +353,14 @@ Public Class RecipeFolders
             Catch ex As Exception
             End Try
 
-            FavoriteFolder.ChangeCategory(recipeToChange, destinationCategory.Name)
-            SearchResultsFolder.ChangeCategory(recipeToChange, destinationCategory.Name)
-
-            recipeToChange.Categegory = destinationCategory.Name
-            recipeToChange.RenderSubTitle()
+            SearchResultsFolder.ChangeCategory(recipeToChange, oldCategory, destinationCategory.Name)
         End If
+
+        FavoriteFolder.ChangeCategory(recipeToChange, oldCategory, destinationCategory.Name)
+        HistoryFolder.ChangeCategory(recipeToChange, oldCategory, destinationCategory.Name)
+
+        recipeToChange.Category = destinationCategory.Name
+        recipeToChange.RenderSubTitle()
 
     End Function
 
@@ -343,6 +374,7 @@ Public Class RecipeFolders
             If Not originalCategory.Name.Equals(newCategoryName) Then
                 Await originalCategory.Folder.RenameAsync(newCategoryName)
                 FavoriteFolder.RenameCategory(originalCategory.Name, newCategoryName)
+                HistoryFolder.RenameCategory(originalCategory.Name, newCategoryName)
                 reload = True
             End If
 
@@ -406,5 +438,66 @@ Public Class RecipeFolders
         End If
 
     End Function
+
+#End Region
+
+#Region "RenameRecipe"
+
+    Public Async Function RenameRecipeAsync(recipeToRename As Recipe, newName As String) As Task
+
+        Dim oldName As New String(recipeToRename.Name.ToCharArray) ' Create a real copy
+        Dim folder = GetFolder(recipeToRename.Category)
+
+        'Rename XML file
+        If recipeToRename.CookedNoOfTimes > 0 AndAlso recipeToRename.ItemType = Recipe.ItemTypes.Recipe Then
+            Try
+                Dim xmlFile As StorageFile
+                xmlFile = Await folder.Folder.GetFileAsync(oldName + ".xml")
+                If xmlFile IsNot Nothing Then
+                    Await xmlFile.RenameAsync(newName + ".xml")
+                End If
+            Catch ex As Exception
+            End Try
+        End If
+
+        'Rename notes
+        If recipeToRename.Notes IsNot Nothing Then
+            Try
+                Await recipeToRename.Notes.RenameAsync(newName + ".rtf")
+            Catch ex As Exception
+            End Try
+        End If
+
+        'Rename images
+        Dim files As IReadOnlyList(Of StorageFile) = Await folder.GetImageFilesOfRecipeAsync(recipeToRename)
+        If files IsNot Nothing Then
+            For Each bitmapFile In files
+                Try
+                    Dim bitmapSuffix As String = bitmapFile.Name.Substring(bitmapFile.Name.IndexOf("_image_"))
+                    Await bitmapFile.RenameAsync(newName + bitmapSuffix)
+                Catch ex As Exception
+                End Try
+            Next
+        End If
+
+        'Rename recipe file if it is not an external recipe
+        Try
+            If recipeToRename.ItemType = Recipe.ItemTypes.Recipe AndAlso recipeToRename.File IsNot Nothing Then
+                Await recipeToRename.File.RenameAsync(newName + ".pdf")
+            End If
+        Catch ex As Exception
+            Return
+        End Try
+
+        'Rename was successful so far. Update references.
+        folder.RenameRecipe(recipeToRename, oldName, newName)
+
+        FavoriteFolder.RenameRecipe(recipeToRename, oldName, newName)
+        SearchResultsFolder.RenameRecipe(recipeToRename, oldName, newName)
+        HistoryFolder.RenameRecipe(recipeToRename, oldName, newName)
+
+    End Function
+
+#End Region
 
 End Class

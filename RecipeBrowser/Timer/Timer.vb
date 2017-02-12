@@ -3,7 +3,6 @@
 Namespace Global.Timers
 
     Public Class Timer
-
         Implements INotifyPropertyChanged
 
         Public Event PropertyChanged(ByVal sender As Object, ByVal e As PropertyChangedEventArgs) Implements INotifyPropertyChanged.PropertyChanged
@@ -27,6 +26,7 @@ Namespace Global.Timers
         Private _State As TimerState = TimerState.Stopped
         Private _DisplayTime As String = "  00:00:00"
         Private _DisplayTimeForeground As SolidColorBrush = Timers.Factory.TimeNotOverForeground
+        Private _DisplayTimeBackground As SolidColorBrush = Timers.Factory.TimeNotOverBackground
         Private _StartAllowed As Visibility = Visibility.Collapsed
         Private _StopAllowed As Visibility = Visibility.Collapsed
         Private _ContinueAllowed As Visibility = Visibility.Collapsed
@@ -92,6 +92,18 @@ Namespace Global.Timers
                 If Not value.Equals(_DisplayTimeForeground) Then
                     _DisplayTimeForeground = value
                     OnPropertyChanged("DisplayTimeForeground")
+                End If
+            End Set
+        End Property
+
+        Public Property DisplayTimeBackground As SolidColorBrush
+            Get
+                Return _DisplayTimeBackground
+            End Get
+            Set(value As SolidColorBrush)
+                If Not value.Equals(_DisplayTimeForeground) Then
+                    _DisplayTimeBackground = value
+                    OnPropertyChanged("DisplayTimeBackground")
                 End If
             End Set
         End Property
@@ -238,7 +250,7 @@ Namespace Global.Timers
 
             Dim now = DateTime.Now
             Dim diff = now.Subtract(StartTime)
-            SecondsToWait = SecondsToWait - diff.Seconds
+            SecondsToWait = SecondsToWait - diff.TotalSeconds
 
             State = TimerState.Paused
             StoreState()
@@ -303,8 +315,10 @@ Namespace Global.Timers
                 timeStr = "- "
                 remaining = -remaining
                 DisplayTimeForeground = Timers.Factory.TimeOverForeground
+                DisplayTimeBackground = Timers.Factory.TimeOverBackground
             Else
                 DisplayTimeForeground = Timers.Factory.TimeNotOverForeground
+                DisplayTimeBackground = Timers.Factory.TimeNotOverBackground
                 timeStr = "  "
             End If
             Dim hours As Integer = remaining \ 3600

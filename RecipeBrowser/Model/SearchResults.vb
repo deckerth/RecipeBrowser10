@@ -61,23 +61,23 @@ Public Class SearchResults
 
     End Sub
 
-    Public Sub ChangeCategory(ByRef recipeToChange As Recipe, ByRef NewCategory As String)
+    'Public Sub ChangeCategory(ByRef recipeToChange As Recipe, ByRef NewCategory As String)
 
-        If Not ContentLoaded() Then
-            Return
-        End If
+    '    If Not ContentLoaded() Then
+    '        Return
+    '    End If
 
-        Dim instanceInSearchResults As Recipe = GetRecipe(recipeToChange.Categegory, recipeToChange.Name)
-        If instanceInSearchResults Is Nothing Then
-            Return
-        End If
+    '    Dim instanceInSearchResults As Recipe = GetRecipe(recipeToChange.Category, recipeToChange.Name)
+    '    If instanceInSearchResults Is Nothing Then
+    '        Return
+    '    End If
 
-        If Not ReferenceEquals(instanceInSearchResults, recipeToChange) Then
-            instanceInSearchResults.Categegory = NewCategory
-            instanceInSearchResults.RenderSubTitle()
-            instanceInSearchResults.Notes = recipeToChange.Notes
-        End If
+    '    If Not ReferenceEquals(instanceInSearchResults, recipeToChange) Then
+    '        instanceInSearchResults.Category = NewCategory
+    '        instanceInSearchResults.RenderSubTitle()
+    '        instanceInSearchResults.Notes = recipeToChange.Notes
+    '    End If
 
-    End Sub
+    'End Sub
 
 End Class

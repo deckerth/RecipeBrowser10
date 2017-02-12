@@ -8,7 +8,8 @@
     <Application.Resources>
         <ResourceDictionary>
             <local:RecipeFolders x:Key="recipeFolders"/>
-
+            <local:DateConverter x:Key="DateToString"/>
+            
             <SolidColorBrush x:Key="RecipesItemsBackgroundBrush" Color="#FFF4ECD0"/>
             <SolidColorBrush x:Key="MenuBarBackgroundBrush" Color="#FF5F3D02"/>
             <SolidColorBrush x:Key="MenuBarForegroundBrush" Color="#FFF4ECD0"/>
@@ -20,7 +21,12 @@
             <SolidColorBrush x:Key="ProgressBarIndeterminateForegroundThemeBrush" Color="#FF5F3D02" />
             <SolidColorBrush x:Key="TimeOverForegroundBrush" Color="Red"/>
             <SolidColorBrush x:Key="TimeNotOverForegroundBrush" Color="#FFF4ECD0"/>
-
+            <SolidColorBrush x:Key="TimeOverBackgroundBrush" Color="White"/>
+            <SolidColorBrush x:Key="TimeNotOverBackgroundBrush" Color="#FF5F3D02"/>
+            <SolidColorBrush x:Key="HistorySeparatorBackgroundBrush" Color="#FFF3E7BC"/>
+            <!--<SolidColorBrush x:Key="PageTitleForegroundBrush" Color="#FF5F3D02" />-->
+            <SolidColorBrush x:Key="PageTitleForegroundBrush" Color="Black" />
+                       
             <!-- 
              https://marcominerva.wordpress.com/2013/10/29/customizing-searchbox-appearance-in-windows-8-1-store-apps/
             

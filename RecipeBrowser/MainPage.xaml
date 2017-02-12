@@ -33,7 +33,7 @@
                            PaneBackground="{StaticResource MenuBarBackgroundBrush}"
                            DisplayMode="Inline"
                            PanePlacement="Right"
-                           IsPaneOpen="{x:Bind TimerController.TimersPaneOpen, Mode=TwoWay}" OpenPaneLength="280">
+                           IsPaneOpen="{x:Bind TimersPaneOpen, Mode=TwoWay}" OpenPaneLength="280">
         
         <VisualStateManager.VisualStateGroups>
             <VisualStateGroup x:Name="AdaptiveStates">
@@ -65,7 +65,7 @@
                                   Foreground="{StaticResource MenuBarForegroundBrush}" 
                                   FontFamily="Segoe MDL2 Assets" 
                                   FontSize="20" 
-                                  Content="    &#xE72A;" />
+                                  Content="    &#xE89F;" />
                     <TextBlock x:Uid="Timer" VerticalAlignment="Center" FontWeight="Bold" Margin="50,-5,0,0" />
                 </StackPanel>
 

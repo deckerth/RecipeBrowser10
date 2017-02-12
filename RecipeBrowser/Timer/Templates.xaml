@@ -7,7 +7,7 @@
 
     <DataTemplate x:Key="TimerTemplate" x:DataType="timers:Timer">
         <StackPanel Orientation="Horizontal">
-            <Border BorderThickness="2" CornerRadius="4" BorderBrush="{StaticResource TimeNotOverForegroundBrush}" Height="40" Margin="20,-5,0,0">
+            <Border BorderThickness="2" CornerRadius="4" BorderBrush="{StaticResource TimeNotOverForegroundBrush}" Height="40" Margin="20,-5,0,0" Background="{x:Bind DisplayTimeBackground, Mode=OneWay}">
                 <TextBlock x:Name="TimeWaited"
                                    Text="{x:Bind DisplayTime, Mode=OneWay}"
                                    Foreground="{x:Bind DisplayTimeForeground, Mode=OneWay}"

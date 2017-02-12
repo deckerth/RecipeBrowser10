@@ -156,7 +156,7 @@
   <data name="ChangeCategoryText.Text" xml:space="preserve">
     <value>Kategorie ändern</value>
   </data>
-  <data name="ChangeRootFolder.Text" xml:space="preserve">
+  <data name="ChangeRootFolder.Content" xml:space="preserve">
     <value>Startordner ändern</value>
   </data>
   <data name="CookedOn" xml:space="preserve">
@@ -177,8 +177,14 @@
   <data name="DisplayNote" xml:space="preserve">
     <value>Notiz anzeigen</value>
   </data>
+  <data name="DontAsk" xml:space="preserve">
+    <value>Nicht noch einmal fragen</value>
+  </data>
   <data name="DoYouWantToDelete" xml:space="preserve">
     <value>Soll das Rezept gelöscht werden?</value>
+  </data>
+  <data name="DoYouWantToScan" xml:space="preserve">
+    <value>Die Datenbank wurde noch nicht initialisiert. Wollen Sie die Initialisierung jetzt vornehmen?</value>
   </data>
   <data name="EditCategories.Text" xml:space="preserve">
     <value>Kategorien bearbeiten</value>
@@ -210,17 +216,26 @@
   <data name="GetCategoryImage.Content" xml:space="preserve">
     <value>Kategoriebild laden</value>
   </data>
+  <data name="HistoryFolder" xml:space="preserve">
+    <value>Zubereitungshistorie</value>
+  </data>
   <data name="Home.Text" xml:space="preserve">
     <value>Kategorieübersicht</value>
   </data>
   <data name="LastCookedDescending.Text" xml:space="preserve">
     <value>Zuletzt zubereitet, absteigend</value>
   </data>
+  <data name="Later" xml:space="preserve">
+    <value>Nicht jetzt</value>
+  </data>
   <data name="LogAsCooked.Label" xml:space="preserve">
     <value>Zubereitet!</value>
   </data>
   <data name="LoggingSwitch.Header" xml:space="preserve">
     <value>Anwendungsereignisse protokollieren</value>
+  </data>
+  <data name="MoveTo.Text" xml:space="preserve">
+    <value>Verschieben nach...</value>
   </data>
   <data name="NameAscending.Text" xml:space="preserve">
     <value>Name, aufsteigend</value>
@@ -244,7 +259,7 @@
     <value>Rezept</value>
   </data>
   <data name="RefreshRecipes.Text" xml:space="preserve">
-    <value>Anzeige aktualisieren</value>
+    <value>Liste aktualisieren</value>
   </data>
   <data name="RemoveRecipe.[using:Windows.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
     <value>Rezept aus der Liste entfernen</value>
@@ -266,6 +281,9 @@
   </data>
   <data name="Share.Text" xml:space="preserve">
     <value>Teilen</value>
+  </data>
+  <data name="ShowHistoryText.Text" xml:space="preserve">
+    <value>Historie</value>
   </data>
   <data name="ShowTimersText.Text" xml:space="preserve">
     <value>Timer</value>
@@ -296,5 +314,116 @@
   </data>
   <data name="Yes" xml:space="preserve">
     <value>Ja</value>
+  </data>
+  <data name="MoreEntries" xml:space="preserve">
+    <value>Mehr...</value>
+  </data>
+  <data name="CategoryFilter" xml:space="preserve">
+    <value>Kategoriefilter</value>
+  </data>
+  <data name="setFilter.[using:Windows.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Nach Kategorie filtern</value>
+  </data>
+  <data name="addExternalRecipe.[using:Windows.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Rezept aus externer Quelle (z.B. Kochbuch) hinzufügen</value>
+  </data>
+  <data name="AddExternalRecipeDialog.PrimaryButtonText" xml:space="preserve">
+    <value>Hinzufügen</value>
+  </data>
+  <data name="AddExternalRecipeDialog.SecondaryButtonText" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="AddExternalRecipeDialog.Title" xml:space="preserve">
+    <value>Rezept hinzufügen</value>
+  </data>
+  <data name="deleteFilter.[using:Windows.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Filter löschen</value>
+  </data>
+  <data name="ExternalRecipeCategory.Header" xml:space="preserve">
+    <value>Kategorie</value>
+  </data>
+  <data name="ExternalRecipeDate.Header" xml:space="preserve">
+    <value>Zubereitet am</value>
+  </data>
+  <data name="ExternalRecipeSource.PlaceholderText" xml:space="preserve">
+    <value>Rezeptquelle</value>
+  </data>
+  <data name="ExternalRecipeTitle.PlaceholderText" xml:space="preserve">
+    <value>Titel</value>
+  </data>
+  <data name="AddFirstRecipe.Text" xml:space="preserve">
+    <value>Die Galerie zu diesem Rezept ist leer</value>
+  </data>
+  <data name="ImageGalery.[using:Windows.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Bilder zu diesem Rezept</value>
+  </data>
+  <data name="UploadPicture.[using:Windows.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Bild hinzufügen</value>
+  </data>
+  <data name="DoYouWantToDeleteImage" xml:space="preserve">
+    <value>Möchten Sie das Bild löschen?</value>
+  </data>
+  <data name="ImageNotDeleted" xml:space="preserve">
+    <value>Das Bild konnte nicht gelöscht werden</value>
+  </data>
+  <data name="RecipeImage" xml:space="preserve">
+    <value>Rezeptfoto</value>
+  </data>
+  <data name="ImageGalery.Label" xml:space="preserve">
+    <value>Galerie</value>
+  </data>
+  <data name="ShowTimersPane.[using:Windows.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Timer anzeigen</value>
+  </data>
+  <data name="RefreshGalery.[using:Windows.UI.Xaml.Controls]ToolTipService.ToolTip" xml:space="preserve">
+    <value>Galerie neu laden</value>
+  </data>
+  <data name="Settings.Text" xml:space="preserve">
+    <value>Einstellungen</value>
+  </data>
+  <data name="SettingsDialog.Title" xml:space="preserve">
+    <value>Einstellungen</value>
+  </data>
+  <data name="AddRecipe.Text" xml:space="preserve">
+    <value>Neues Rezept</value>
+  </data>
+  <data name="RecipeDoesAlreadyExist" xml:space="preserve">
+    <value>Ein Rezept mit diesem Namen ist bereits in der Sammlung enthalten</value>
+  </data>
+  <data name="RecipeNameEditor.PrimaryButtonText" xml:space="preserve">
+    <value>Hinzufügen</value>
+  </data>
+  <data name="RecipeNameEditor.SecondaryButtonText" xml:space="preserve">
+    <value>Abbrechen</value>
+  </data>
+  <data name="RecipeNameEditor.Title" xml:space="preserve">
+    <value>Rezept hinzufügen</value>
+  </data>
+  <data name="RecipeNameIsEmpty" xml:space="preserve">
+    <value>Geben Sie einen Titel für das Rezept ein</value>
+  </data>
+  <data name="RecipeNameLabel.Text" xml:space="preserve">
+    <value>Rezepttitel</value>
+  </data>
+  <data name="ExportHistory.Text" xml:space="preserve">
+    <value>Historie exportieren</value>
+  </data>
+  <data name="ImportExportHistory.Text" xml:space="preserve">
+    <value>Historie exportieren / importieren</value>
+  </data>
+  <data name="ImportHistory.Text" xml:space="preserve">
+    <value>Historie importieren</value>
+  </data>
+  <data name="DoYouWantToRescan" xml:space="preserve">
+    <value>Möchten Sie die Datenbank neu aufbauen? Dieser Vorgang kann einige Minuten dauern.</value>
+  </data>
+  <data name="Rename" xml:space="preserve">
+    <value>Umbenennen</value>
+  </data>
+  <data name="RenameRecipe.Text" xml:space="preserve">
+    <value>Rezept umbenennen</value>
+  </data>
+  <data name="RenameRecipeText" xml:space="preserve">
+    <value>Rezept umbenennen</value>
   </data>
 </root>

@@ -8,6 +8,7 @@ Public Class Favorites
     Class RecipeDescriptor
         Public Category As String
         Public Name As String
+        Public IsExternal As Boolean
     End Class
 
     Private FavoritesList As List(Of RecipeDescriptor)
@@ -32,9 +33,11 @@ Public Class Favorites
             Dim recipeComposite As ApplicationDataCompositeValue = item.Value
             Dim folder As String
             Dim recipe As String
+            Dim isExternal As Boolean
             Try
                 folder = recipeComposite("Folder")
                 recipe = recipeComposite("Recipe")
+                isExternal = recipeComposite("IsExternal")
             Catch ex As Exception
             End Try
             If folder IsNot Nothing AndAlso recipe IsNot Nothing Then
@@ -45,6 +48,7 @@ Public Class Favorites
                     Dim newRecipe As New RecipeDescriptor
                     newRecipe.Category = folder
                     newRecipe.Name = recipe
+                    newRecipe.IsExternal = isExternal
                     FavoritesList.Add(newRecipe)
                 End If
             End If
@@ -56,15 +60,16 @@ Public Class Favorites
         If Not _ContentLoaded Then
             Await LoadAsync()
         End If
-        If GetRecipe(newRecipe.Categegory, newRecipe.Name) Is Nothing Then
+        If GetRecipe(newRecipe.Category, newRecipe.Name) Is Nothing Then
             _RecipeList.Add(newRecipe)
             ApplySortOrder()
 
             Dim roamingSettings = Windows.Storage.ApplicationData.Current.RoamingSettings
             Dim recipeList = roamingSettings.CreateContainer("Favorites", Windows.Storage.ApplicationDataCreateDisposition.Always)
             Dim recipeComposite = New Windows.Storage.ApplicationDataCompositeValue()
-            recipeComposite("Folder") = newRecipe.Categegory
+            recipeComposite("Folder") = newRecipe.Category
             recipeComposite("Recipe") = newRecipe.Name
+            recipeComposite("IsExternal") = (newRecipe.ItemType = Recipe.ItemTypes.ExternalRecipe)
             recipeList.Values(Guid.NewGuid().ToString()) = recipeComposite
         End If
     End Function
@@ -80,7 +85,8 @@ Public Class Favorites
         Dim index As String
         For Each item In recipeList.Values
             Dim recipeComposite As ApplicationDataCompositeValue = item.Value
-            If recipeComposite("Recipe").Equals(recipeToDelete.Name) Then
+            If recipeComposite("Recipe").Equals(recipeToDelete.Name) AndAlso
+               recipeComposite("Folder").Equals(recipeToDelete.Category) Then
                 index = item.Key
                 Exit For
             End If
@@ -103,9 +109,13 @@ Public Class Favorites
         _RecipeList.Clear()
 
         For Each item In FavoritesList
-            Dim newRecipe As New Recipe
+            Dim newRecipe As Recipe
 
-            newRecipe = Await allFolders.GetRecipeAsync(item.Category, item.Category, item.Name)
+            If item.IsExternal Then
+                newRecipe = New ExternalRecipe(item.Category, item.Name)
+            Else
+                newRecipe = Await allFolders.GetRecipeAsync(item.Category, item.Category, item.Name)
+            End If
             If newRecipe IsNot Nothing Then
                 _RecipeList.Add(newRecipe)
             End If
@@ -119,13 +129,13 @@ Public Class Favorites
     Public Function IsFavorite(recipeToLookup As Recipe) As Boolean
 
         If ContentLoaded() Then
-            Return GetRecipe(recipeToLookup.Categegory, recipeToLookup.Name) IsNot Nothing
+            Return GetRecipe(recipeToLookup.Category, recipeToLookup.Name) IsNot Nothing
         Else
             If FavoritesList Is Nothing Then
                 LoadFavorites()
             End If
 
-            Dim matches = FavoritesList.Where(Function(otherRecipe) otherRecipe.Name.Equals(recipeToLookup.Name) And otherRecipe.Category.Equals(recipeToLookup.Categegory))
+            Dim matches = FavoritesList.Where(Function(otherRecipe) otherRecipe.Name.Equals(recipeToLookup.Name) And otherRecipe.Category.Equals(recipeToLookup.Category))
             Return matches.Count() = 1
         End If
 
@@ -147,6 +157,7 @@ Public Class Favorites
             Dim recipeComposite = New Windows.Storage.ApplicationDataCompositeValue()
             recipeComposite("Folder") = NewName
             recipeComposite("Recipe") = storedRecords.Values(key)("Recipe")
+            recipeComposite("IsExternal") = storedRecords.Values(key)("IsExternal")
             storedRecords.Values.Remove(key)
             storedRecords.Values(key) = recipeComposite
         Next
@@ -155,23 +166,19 @@ Public Class Favorites
 
     End Sub
 
-    Public Sub ChangeCategory(ByRef recipeToChange As Recipe, ByRef NewCategory As String)
+    Public Overrides Sub ChangeCategory(ByRef recipeToChange As Recipe, ByRef oldCategpry As String, ByRef newCategory As String)
 
-        Dim instanceInFavorites As Recipe = GetRecipe(recipeToChange.Categegory, recipeToChange.Name)
-        If instanceInFavorites IsNot Nothing AndAlso Not ReferenceEquals(instanceInFavorites, recipeToChange) Then
-            instanceInFavorites.Categegory = NewCategory
-            instanceInFavorites.RenderSubTitle()
-            instanceInFavorites.Notes = recipeToChange.Notes
-        End If
+        MyBase.ChangeCategory(recipeToChange, oldCategpry, newCategory)
 
         Dim roamingSettings = Windows.Storage.ApplicationData.Current.RoamingSettings
         Dim storedRecords = roamingSettings.CreateContainer("Favorites", Windows.Storage.ApplicationDataCreateDisposition.Always)
 
         For Each item In storedRecords.Values
-            If item.Value("Folder") = recipeToChange.Categegory And item.Value("Recipe") = recipeToChange.Name Then
+            If item.Value("Folder") = recipeToChange.Category And item.Value("Recipe") = recipeToChange.Name Then
                 Dim recipeComposite = New Windows.Storage.ApplicationDataCompositeValue()
-                recipeComposite("Folder") = NewCategory
+                recipeComposite("Folder") = newCategory
                 recipeComposite("Recipe") = recipeToChange.Name
+                recipeComposite("IsExternal") = item.Value("IsExternal")
                 storedRecords.Values.Remove(item.Key)
                 storedRecords.Values(item.Key) = recipeComposite
                 Return
@@ -179,5 +186,42 @@ Public Class Favorites
         Next
 
     End Sub
+
+#Region "RenameRecipe"
+
+    Public Overrides Sub RenameRecipe(ByRef recipeToRename As Recipe, ByVal oldName As String, ByVal newName As String)
+
+
+        MyBase.RenameRecipe(recipeToRename, oldName, newName)
+
+        Dim roamingSettings = Windows.Storage.ApplicationData.Current.RoamingSettings
+        Dim storedRecords As ApplicationDataContainer = roamingSettings.CreateContainer("Favorites", Windows.Storage.ApplicationDataCreateDisposition.Always)
+
+        For Each item In storedRecords.Values
+            Dim recipeComposite As ApplicationDataCompositeValue = item.Value
+            Dim currentCategory As String
+            Dim currentRecipe As String
+            Dim isExternal As Boolean
+            Try
+                currentCategory = recipeComposite("Folder")
+                currentRecipe = recipeComposite("Recipe")
+                isExternal = recipeComposite("IsExternal")
+            Catch ex As Exception
+                Continue For
+            End Try
+
+            If currentCategory = recipeToRename.Category And currentRecipe = oldName Then
+                Dim newRecipeComposite As Windows.Storage.ApplicationDataCompositeValue = New Windows.Storage.ApplicationDataCompositeValue()
+                newRecipeComposite("Folder") = recipeToRename.Category
+                newRecipeComposite("Recipe") = newName
+                newRecipeComposite("IsExternal") = isExternal
+                storedRecords.Values.Remove(item.Key)
+                storedRecords.Values(item.Key) = newRecipeComposite
+                Return
+            End If
+        Next
+    End Sub
+
+#End Region
 
 End Class

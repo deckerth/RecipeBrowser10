@@ -164,6 +164,8 @@
             Dim frameState As Dictionary(Of String, Object) = SuspensionManager.SessionStateForFrame(Me.Frame)
             Me._pageKey = "Page-" & Me.Frame.BackStackDepth
 
+            App.Logger.Write("NavigatedTo " + _pageKey)
+
             If e.NavigationMode = Navigation.NavigationMode.New Then
 
                 ' Bestehenden Zustand für die Vorwärtsnavigation löschen, wenn dem Navigationsstapel eine neue

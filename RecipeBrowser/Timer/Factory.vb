@@ -20,6 +20,8 @@ Namespace Global.Timers
 
         Public Shared TimeOverForeground As SolidColorBrush
         Public Shared TimeNotOverForeground As SolidColorBrush
+        Public Shared TimeOverBackground As SolidColorBrush
+        Public Shared TimeNotOverBackground As SolidColorBrush
 
         Private Dispatcher As CoreDispatcher
         Private PeriodicTimer As ThreadPoolTimer
@@ -33,6 +35,8 @@ Namespace Global.Timers
 
             TimeOverForeground = DirectCast(RecipeBrowser.App.Current.Resources("TimeOverForegroundBrush"), SolidColorBrush)
             TimeNotOverForeground = DirectCast(RecipeBrowser.App.Current.Resources("TimeNotOverForegroundBrush"), SolidColorBrush)
+            TimeOverBackground = DirectCast(RecipeBrowser.App.Current.Resources("TimeOverBackgroundBrush"), SolidColorBrush)
+            TimeNotOverBackground = DirectCast(RecipeBrowser.App.Current.Resources("TimeNotOverBackgroundBrush"), SolidColorBrush)
             AddHandler Application.Current.Resuming, AddressOf App_Resuming
             AddHandler Application.Current.Suspending, AddressOf App_Suspending
         End Sub
@@ -41,7 +45,7 @@ Namespace Global.Timers
             PeriodicTimer = ThreadPoolTimer.CreatePeriodicTimer(New TimerElapsedHandler(AddressOf PeriodicTimerCallback), TimeSpan.FromSeconds(1))
             TimersAllowed = True
 
-            Dim theController = New Timers.Controller()
+            Controller.CreateInstance()
         End Sub
 
         Public Sub BindPage(ByRef disp As CoreDispatcher)
@@ -78,7 +82,7 @@ Namespace Global.Timers
 
 #End Region
 
-#Region "Event Handler"
+#Region "Event Handler and lifecycle"
         Private Async Sub PeriodicTimerCallback(timer As ThreadPoolTimer)
             If Dispatcher IsNot Nothing Then
                 Await Dispatcher.RunAsync(CoreDispatcherPriority.Normal, Sub()
@@ -91,6 +95,7 @@ Namespace Global.Timers
 
         Private Sub App_Suspending(sender As Object, e As SuspendingEventArgs)
             PeriodicTimer.Cancel()
+            TimersAllowed = False
         End Sub
 
         Private Sub App_Resuming(sender As Object, e As Object)

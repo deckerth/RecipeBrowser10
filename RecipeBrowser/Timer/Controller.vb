@@ -18,24 +18,26 @@
             Dim localSettings = Windows.Storage.ApplicationData.Current.LocalSettings
 
             Current = Me
-            ShowTimersButtonVisibility = Factory.Current.TimersAllowed
             Dim isOpen As String = localSettings.Values("TimersPaneOpen")
             If isOpen IsNot Nothing Then
                 Boolean.TryParse(isOpen, TimersPaneOpen)
             End If
         End Sub
 
-        Dim _ShowTimersButtonVisibility As Visibility
-        Public Property ShowTimersButtonVisibility As Visibility
+        Public Shared Sub CreateInstance()
+            If Current Is Nothing Then
+                Dim newInstance As Controller = New Controller()
+            End If
+        End Sub
+
+        Public ReadOnly Property ShowTimersPaneButtonVisibility As Visibility
             Get
-                Return _ShowTimersButtonVisibility
-            End Get
-            Set(value As Visibility)
-                If value <> _ShowTimersButtonVisibility Then
-                    _ShowTimersButtonVisibility = value
-                    OnPropertyChanged("ShowTimersButtonVisibility")
+                If _TimersPaneOpen Then
+                    Return Visibility.Collapsed
+                Else
+                    Return Visibility.Visible
                 End If
-            End Set
+            End Get
         End Property
 
         Dim _TimersPaneOpen As Boolean
@@ -49,6 +51,7 @@
                     OnPropertyChanged("TimersPaneOpen")
                     Dim localSettings = Windows.Storage.ApplicationData.Current.LocalSettings
                     localSettings.Values("TimersPaneOpen") = _TimersPaneOpen.ToString
+                    OnPropertyChanged("ShowTimersPaneButtonVisibility")
                 End If
             End Set
         End Property

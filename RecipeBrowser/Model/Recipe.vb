@@ -1,13 +1,12 @@
 ﻿Imports Windows.Storage
 Imports Windows.Storage.Provider
 Imports Windows.Globalization.DateTimeFormatting
-Imports System.Globalization
 Imports System.Text
-Imports System.Xml.Serialization
 
 Public Class Recipe
     Implements INotifyPropertyChanged
 
+#Region "Properties"
     Public Event PropertyChanged(ByVal sender As Object, ByVal e As PropertyChangedEventArgs) Implements INotifyPropertyChanged.PropertyChanged
 
     Protected Overridable Sub OnPropertyChanged(ByVal PropertyName As String)
@@ -17,11 +16,22 @@ Public Class Recipe
         RaiseEvent PropertyChanged(Me, New PropertyChangedEventArgs(PropertyName))
     End Sub
 
-    Public Property Categegory As String
+    Public Property Category As String
+
+    Private _Name As String
     Public Property Name As String
+        Get
+            Return _Name
+        End Get
+        Set(value As String)
+            If value <> _Name Then
+                _Name = value
+                OnPropertyChanged("Name")
+            End If
+        End Set
+    End Property
 
     Private _SubTitle As String
-
     Public Property SubTitle As String
         Get
             Return _SubTitle
@@ -40,6 +50,25 @@ Public Class Recipe
     Public Property RenderedPageNumber As Integer
     Public Property LastCooked As String
     Public Property CookedNoOfTimes As Integer
+    Public Property ExternalSource As String
+    Public ReadOnly Property ExternalSourceVisible As Visibility
+        Get
+            If ExternalSource IsNot Nothing AndAlso ExternalSource.Length > 0 Then
+                Return Visibility.Visible
+            Else
+                Return Visibility.Collapsed
+            End If
+        End Get
+    End Property
+
+    Public Enum ItemTypes
+        Recipe
+        ExternalRecipe
+        Header
+    End Enum
+    Public Property ItemType As ItemTypes = ItemTypes.Recipe
+    Public Property RecipeContentVisibility As Visibility = Visibility.Visible
+    Public Property HeaderContentVisibility As Visibility = Visibility.Collapsed
 
     Public Property File As Windows.Storage.StorageFile
     Public ReadOnly Property RenderedPage As BitmapImage
@@ -50,6 +79,14 @@ Public Class Recipe
 
     Public Property Notes As Windows.Storage.StorageFile
 
+    Public Property Pictures As ObservableCollection(Of RecipeImage)
+
+    Public Overrides Function ToString() As String
+        Return Name + " (" + Category + ")"
+    End Function
+#End Region
+
+#Region "Page Rendering"
     Private _RenderedPage As BitmapImage
     Private _RenderedPages As New List(Of BitmapImage)
     Private _Document As Windows.Data.Pdf.PdfDocument
@@ -58,124 +95,17 @@ Public Class Recipe
 
     Public Sub RenderSubTitle()
 
-        'Dim stats = Statistics.data.GetStatistics(Categegory, Name)
-        'SubTitle = Categegory + ", " + DateTimeFormatter.ShortDate.Format(CreationDateTime)
-        'If stats IsNot Nothing Then
-        '    SubTitle = SubTitle + ", " + App.Texts.GetString("CookedOn") + " " + stats.LastCooked
-        '    SubTitle = SubTitle + " (" + App.Texts.GetString("UpToNow") + " " + stats.CookedNoOfTimes.ToString + " " + App.Texts.GetString("Times") + ")"
-        'End If
-
-        SubTitle = Categegory + ", " + DateTimeFormatter.ShortDate.Format(CreationDateTime)
+        If CreationDateTime.Equals(Date.MinValue) Then
+            SubTitle = Category
+        Else
+            SubTitle = Category + ", " + DateTimeFormatter.ShortDate.Format(CreationDateTime)
+        End If
         If CookedNoOfTimes > 0 Then
             SubTitle = SubTitle + ", " + App.Texts.GetString("CookedOn") + " " + LastCooked
             SubTitle = SubTitle + " (" + App.Texts.GetString("UpToNow") + " " + CookedNoOfTimes.ToString + " " + App.Texts.GetString("Times") + ")"
         End If
 
     End Sub
-
-    Private Shared SeparatorString As String = "§§§§§§§"
-
-    Public Function GetKey(folder As String) As String
-
-        Return folder + SeparatorString + Categegory + SeparatorString + Name
-
-    End Function
-
-    Public Shared Sub GetCategoryAndNameFromKey(ByRef key As String, ByRef folder As String, ByRef category As String, ByRef name As String)
-
-        Dim pos As Integer
-        Dim tail As String
-
-        folder = ""
-        category = ""
-        name = ""
-
-        pos = key.IndexOf(SeparatorString)
-
-        If pos = -1 Then
-            Return
-        End If
-
-        folder = key.Substring(0, pos)
-        tail = key.Substring(pos + SeparatorString.Count)
-
-        pos = tail.IndexOf(SeparatorString)
-
-        If pos = -1 Then
-            Return
-        End If
-
-        category = tail.Substring(0, pos)
-        name = tail.Substring(pos + SeparatorString.Count)
-
-    End Sub
-
-    Private Async Function WriteNotesToFileAsync(ByVal noteText As Windows.UI.Text.ITextDocument, ByVal file As Windows.Storage.StorageFile) As Task
-        Try
-
-            ' Prevent updates to the remote version of the file until we 
-            ' finish making changes and call CompleteUpdatesAsync.
-            CachedFileManager.DeferUpdates(file)
-            ' write to file
-            Dim randAccStream As Windows.Storage.Streams.IRandomAccessStream = Await file.OpenAsync(Windows.Storage.FileAccessMode.ReadWrite)
-
-            noteText.SaveToStream(Windows.UI.Text.TextGetOptions.FormatRtf, randAccStream)
-
-            randAccStream.Dispose()
-
-            ' Let Windows know that we're finished changing the file so the 
-            ' other app can update the remote version of the file.
-            Dim status As FileUpdateStatus = Await CachedFileManager.CompleteUpdatesAsync(file)
-            If (status <> FileUpdateStatus.Complete) Then
-                Dim errorBox As Windows.UI.Popups.MessageDialog = New Windows.UI.Popups.MessageDialog(App.Texts.GetString("UnableToSaveNotes"))
-                Await errorBox.ShowAsync()
-            End If
-        Catch ex As Exception
-        End Try
-
-    End Function
-
-    Public Async Function UpdateNoteTextAsync(noteText As Windows.UI.Text.ITextDocument) As Task
-
-        Dim allFolders = DirectCast(App.Current.Resources("recipeFolders"), RecipeFolders)
-
-        If Notes Is Nothing Then
-            Dim recipeFolder = allFolders.GetFolder(Categegory)
-            Try
-                Notes = Await recipeFolder.Folder.CreateFileAsync(Name + ".rtf")
-            Catch ex As Exception
-            End Try
-        End If
-
-        If Notes IsNot Nothing Then
-            Await WriteNotesToFileAsync(noteText, Notes)
-            allFolders.UpdateNote(Me)
-        End If
-
-    End Function
-
-    Public Async Function LogRecipeCookedAsync(CookedOn As DateTimeOffset) As Task
-
-        Dim allFolders = DirectCast(App.Current.Resources("recipeFolders"), RecipeFolders)
-
-        LastCooked = DateTimeFormatter.ShortDate.Format(CookedOn)
-        CookedNoOfTimes = CookedNoOfTimes + 1
-
-        Await allFolders.UpdateStatisticsAsync(Me)
-    End Function
-
-    Function CookedToday() As Boolean
-
-        Return CookedOn(Date.Now)
-
-    End Function
-
-    Function CookedOn(OnDate As DateTimeOffset) As Boolean
-
-        Return LastCooked IsNot Nothing AndAlso LastCooked.Equals(DateTimeFormatter.ShortDate.Format(OnDate))
-
-    End Function
-
 
     Public Async Function RenderPageAsync() As Task
 
@@ -246,6 +176,141 @@ Public Class Recipe
 
     End Function
 
+    Public Async Function PreviousPage() As Task
+
+        If CurrentPage > 1 Then
+            CurrentPage = CurrentPage - 1
+            Await RenderPageAsync()
+        End If
+
+    End Function
+
+    Public Async Function NextPage() As Task
+
+        If CurrentPage < NoOfPages Then
+            CurrentPage = CurrentPage + 1
+            Await RenderPageAsync()
+        End If
+
+    End Function
+
+#End Region
+
+#Region "Key conversion"
+    Private Shared SeparatorString As String = "§§§§§§§"
+
+    Public Function GetKey(folder As String) As String
+
+        Return folder + SeparatorString + Category + SeparatorString + Name
+
+    End Function
+
+    Public Shared Sub GetCategoryAndNameFromKey(ByRef key As String, ByRef folder As String, ByRef category As String, ByRef name As String)
+
+        Dim pos As Integer
+        Dim tail As String
+
+        folder = ""
+        category = ""
+        name = ""
+
+        pos = key.IndexOf(SeparatorString)
+
+        If pos = -1 Then
+            Return
+        End If
+
+        folder = key.Substring(0, pos)
+        tail = key.Substring(pos + SeparatorString.Count)
+
+        pos = tail.IndexOf(SeparatorString)
+
+        If pos = -1 Then
+            Return
+        End If
+
+        category = tail.Substring(0, pos)
+        name = tail.Substring(pos + SeparatorString.Count)
+
+    End Sub
+
+#End Region
+
+#Region "Notes"
+    Private Async Function WriteNotesToFileAsync(ByVal noteText As Windows.UI.Text.ITextDocument, ByVal file As Windows.Storage.StorageFile) As Task
+        Try
+
+            ' Prevent updates to the remote version of the file until we 
+            ' finish making changes and call CompleteUpdatesAsync.
+            CachedFileManager.DeferUpdates(file)
+            ' write to file
+            Dim randAccStream As Windows.Storage.Streams.IRandomAccessStream = Await file.OpenAsync(Windows.Storage.FileAccessMode.ReadWrite)
+
+            noteText.SaveToStream(Windows.UI.Text.TextGetOptions.FormatRtf, randAccStream)
+
+            randAccStream.Dispose()
+
+            ' Let Windows know that we're finished changing the file so the 
+            ' other app can update the remote version of the file.
+            Dim status As FileUpdateStatus = Await CachedFileManager.CompleteUpdatesAsync(file)
+            If (status <> FileUpdateStatus.Complete) Then
+                Dim errorBox As Windows.UI.Popups.MessageDialog = New Windows.UI.Popups.MessageDialog(App.Texts.GetString("UnableToSaveNotes"))
+                Await errorBox.ShowAsync()
+            End If
+        Catch ex As Exception
+        End Try
+
+    End Function
+
+    Public Async Function UpdateNoteTextAsync(noteText As Windows.UI.Text.ITextDocument) As Task
+
+        Dim allFolders = DirectCast(App.Current.Resources("recipeFolders"), RecipeFolders)
+
+        If Notes Is Nothing Then
+            Dim recipeFolder = allFolders.GetFolder(Category)
+            Try
+                Notes = Await recipeFolder.Folder.CreateFileAsync(Name + ".rtf")
+            Catch ex As Exception
+            End Try
+        End If
+
+        If Notes IsNot Nothing Then
+            Await WriteNotesToFileAsync(noteText, Notes)
+            allFolders.UpdateNote(Me)
+        End If
+
+    End Function
+
+#End Region
+
+#Region "LogAsCooked"
+    Public Async Function LogRecipeCookedAsync(CookedOn As DateTimeOffset) As Task
+
+        Dim allFolders = DirectCast(App.Current.Resources("recipeFolders"), RecipeFolders)
+
+        LastCooked = DateTimeFormatter.ShortDate.Format(CookedOn)
+        CookedNoOfTimes = CookedNoOfTimes + 1
+
+        Await allFolders.UpdateStatisticsAsync(Me)
+        History.Current.AddRecipe(Me)
+    End Function
+
+    Function CookedToday() As Boolean
+
+        Return CookedOn(Date.Now)
+
+    End Function
+
+    Function CookedOn(OnDate As DateTimeOffset) As Boolean
+
+        Return LastCooked IsNot Nothing AndAlso LastCooked.Equals(DateTimeFormatter.ShortDate.Format(OnDate))
+
+    End Function
+
+
+#End Region
+
+#Region "Load Recipe"
     Public Async Function LoadRecipeAsync() As Task
 
         If RenderedPage IsNot Nothing Then
@@ -264,24 +329,39 @@ Public Class Recipe
 
     End Function
 
+#End Region
 
-    Public Async Function PreviousPage() As Task
+#Region "Date conversion"
+    Public Shared Function ConvertToDateStr(aDate As Date) As String
+        Return DateTimeFormatter.ShortDate.Format(aDate)
+    End Function
 
-        If CurrentPage > 1 Then
-            CurrentPage = CurrentPage - 1
-            Await RenderPageAsync()
-        End If
+    Public Shared Function ConvertToDate(ByRef datestr As String) As DateTime
+
+        Try
+            ' Create two different encodings.
+            Dim ascii As Encoding = Encoding.GetEncoding("US-ASCII")
+            Dim unicode As Encoding = Encoding.Unicode
+
+            ' Convert the string into a byte array.
+            Dim unicodeBytes As Byte() = unicode.GetBytes(datestr)
+
+            ' Perform the conversion from one encoding to the other.
+            Dim asciiBytes As Byte() = Encoding.Convert(unicode, ascii, unicodeBytes)
+
+            ' Convert the new byte array into a char array and then into a string.
+            Dim asciiChars(ascii.GetCharCount(asciiBytes, 0, asciiBytes.Length) - 1) As Char
+            ascii.GetChars(asciiBytes, 0, asciiBytes.Length, asciiChars, 0)
+            Dim asciiString As New String(asciiChars)
+
+            Return DateTime.Parse(asciiString.Replace("?", ""))
+        Catch ex As Exception
+            Return Nothing
+        End Try
 
     End Function
 
-    Public Async Function NextPage() As Task
-
-        If CurrentPage < NoOfPages Then
-            CurrentPage = CurrentPage + 1
-            Await RenderPageAsync()
-        End If
-
-    End Function
+#End Region
 
 End Class
 
@@ -343,34 +423,8 @@ Public Class RecipeComparer_DateDescending
     End Function
 End Class
 
-
 Public Class RecipeComparer_LastCookedDescending
     Implements IComparer(Of Recipe)
-
-    Private Function ConvertToDate(ByRef datestr As String) As DateTime
-
-        Try
-            ' Create two different encodings.
-            Dim ascii As Encoding = Encoding.GetEncoding("US-ASCII")
-            Dim unicode As Encoding = Encoding.Unicode
-
-            ' Convert the string into a byte array.
-            Dim unicodeBytes As Byte() = unicode.GetBytes(datestr)
-
-            ' Perform the conversion from one encoding to the other.
-            Dim asciiBytes As Byte() = Encoding.Convert(unicode, ascii, unicodeBytes)
-
-            ' Convert the new byte array into a char array and then into a string.
-            Dim asciiChars(ascii.GetCharCount(asciiBytes, 0, asciiBytes.Length) - 1) As Char
-            ascii.GetChars(asciiBytes, 0, asciiBytes.Length, asciiChars, 0)
-            Dim asciiString As New String(asciiChars)
-
-            Return DateTime.Parse(asciiString.Replace("?", ""))
-        Catch ex As Exception
-            Return Nothing
-        End Try
-
-    End Function
 
     Public Function Compare(ByVal x As Recipe, ByVal y As Recipe) As Integer Implements IComparer(Of Recipe).Compare
 
@@ -395,8 +449,8 @@ Public Class RecipeComparer_LastCookedDescending
                 Dim xDate As DateTime
                 Dim yDate As DateTime
 
-                xDate = ConvertToDate(x.LastCooked)
-                yDate = ConvertToDate(y.LastCooked)
+                xDate = Recipe.ConvertToDate(x.LastCooked)
+                yDate = Recipe.ConvertToDate(y.LastCooked)
                 Return -1 * xDate.CompareTo(yDate)
 
             End If

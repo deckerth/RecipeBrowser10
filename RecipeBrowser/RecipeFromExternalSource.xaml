@@ -1,0 +1,30 @@
+﻿<ContentDialog
+    x:Class="RecipeBrowser.RecipeFromExternalSource"
+    x:Name="AddExternalRecipeDialog"
+    x:Uid="AddExternalRecipeDialog"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:RecipeBrowser"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    PrimaryButtonClick="ContentDialog_PrimaryButtonClick"
+    SecondaryButtonClick="ContentDialog_SecondaryButtonClick"
+    IsPrimaryButtonEnabled="False">
+
+    <Grid>
+        <StackPanel>
+            <TextBox x:Name="ExternalRecipeTitle" x:Uid="ExternalRecipeTitle"
+                     Margin="0,20,0,0" />
+            <ComboBox x:Name="ExternalRecipeCategory" x:Uid="ExternalRecipeCategory" Width="300"
+                      ItemsSource="{x:Bind CategoryList}"
+                      Header="Category"
+                      Margin="0,10,0,0"/>
+            <DatePicker x:Name="ExternalRecipeDate" x:Uid="ExternalRecipeDate" Header="Date"
+                       Margin="0,10,0,0"/>
+            <TextBox x:Name="ExternalRecipeSource" x:Uid="ExternalRecipeSource" Margin="0,20,0,0" 
+                     Width="500">
+            </TextBox>
+        </StackPanel>
+    </Grid>
+</ContentDialog>
